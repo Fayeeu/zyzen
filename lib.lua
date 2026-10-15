@@ -515,7 +515,14 @@ local function DownloadFontFile(path, url)
 		pcall(fn_delfile, path)
 	end
 
-	local ok, body = pcall(function() return game:HttpGet(url) end)
+	local ok, body = pcall(function()
+		local requestFn = hasFn("request") or hasFn("http_request") or (syn and syn.request)
+		if requestFn then
+			local response = requestFn({Url = url, Method = "GET"})
+			if response and response.Success ~= false and tonumber(response.StatusCode or 200) < 400 then return response.Body end
+		end
+		return game:HttpGet(url)
+	end)
 	if not ok or not LooksLikeFontFile(body) then
 		return false
 	end
@@ -611,7 +618,36 @@ local ThemePresets = {
  Light = {{235,237,241},{215,220,228},{24,28,36},{80,89,104},{45,99,210}},
  Midnight = {{13,18,32},{24,33,53},{232,239,255},{146,166,198},{111,159,255}},
  Forest = {{15,26,22},{26,43,35},{232,246,237},{150,179,162},{108,209,153}},
+  Dracula = {{40,42,54},{52,55,70},{248,248,242},{160,163,180},{189,147,249}},
+  Nord = {{46,52,64},{59,66,82},{236,239,244},{176,186,201},{136,192,208}},
+  Ocean = {{9,24,38},{15,43,62},{225,243,250},{139,177,194},{48,191,205}},
+  Sunset = {{38,24,31},{58,34,43},{255,239,229},{194,157,149},{255,132,92}},
+  Rose = {{39,25,34},{59,38,50},{255,239,247},{190,155,174},{255,121,171}},
+  Lavender = {{31,27,47},{48,41,69},{244,239,255},{174,162,199},{183,148,255}},
+  Sakura = {{48,31,39},{70,44,55},{255,240,245},{199,161,176},{255,143,177}},
+  Coffee = {{35,29,25},{54,44,37},{246,237,224},{177,159,139},{215,160,104}},
+  Mocha = {{42,35,32},{62,52,47},{245,237,230},{184,165,151},{202,146,116}},
+  Amber = {{35,29,17},{54,44,23},{255,247,220},{190,171,124},{255,190,55}},
+  Crimson = {{38,20,24},{59,29,35},{255,235,237},{190,145,151},{245,83,99}},
+  Emerald = {{16,32,28},{25,50,42},{230,248,239},{144,184,166},{52,211,153}},
+  Mint = {{21,35,34},{32,54,52},{231,250,246},{147,186,180},{92,224,190}},
+  Arctic = {{224,237,245},{203,222,233},{25,42,55},{91,119,137},{25,143,190}},
+  Slate = {{30,36,43},{44,52,61},{235,240,245},{151,164,178},{115,169,214}},
+  Graphite = {{25,27,30},{39,42,47},{239,241,244},{148,153,160},{123,174,230}},
+  Cyberpunk = {{20,17,35},{35,26,55},{248,241,255},{174,151,195},{255,64,190}},
+  Neon = {{13,20,25},{23,34,41},{232,255,250},{133,174,168},{0,235,190}},
+  AmberLight = {{248,241,224},{232,220,194},{48,39,28},{125,105,77},{202,126,34}},
+  RoseLight = {{249,235,241},{235,213,224},{55,34,45},{133,99,115},{207,75,132}},
+  Sky = {{20,35,51},{31,54,76},{231,244,255},{148,180,207},{76,167,255}},
+  Blue = {{19,28,45},{29,43,67},{232,240,255},{146,166,199},{76,126,255}},
+  Plum = {{35,24,42},{54,36,64},{247,235,255},{180,151,194},{204,119,255}},
+  Volcano = {{38,25,20},{59,37,28},{255,239,225},{194,153,130},{255,112,61}},
+  SakuraLight = {{250,237,242},{235,216,225},{56,36,45},{136,102,116},{215,92,137}},
+  Mono = {{29,29,29},{45,45,45},{245,245,245},{165,165,165},{230,230,230}},
 }
+local ThemeNames = {}
+for name in pairs(ThemePresets) do table.insert(ThemeNames, name) end
+table.sort(ThemeNames)
 local BaseThemeTokens = {"Background", "Surface", "Text", "TextDim", "Accent"}
 local function CompletePalette(base)
  local light = base.Background.R*.2126 + base.Background.G*.7152 + base.Background.B*.0722 > .5
@@ -681,6 +717,63 @@ function NullUI:SetTheme(value)
   end
  end
  return self
+end
+
+local FontSources = {
+	["Itim"] = {"https://raw.githubusercontent.com/google/fonts/main/ofl/itim/Itim-Regular.ttf"},
+	["Winky Rough"] = {"https://raw.githubusercontent.com/google/fonts/main/ofl/winkyrough/WinkyRough%5Bwght%5D.ttf"},
+	["Archivo Black"] = {"https://raw.githubusercontent.com/google/fonts/main/ofl/archivoblack/ArchivoBlack-Regular.ttf"},
+	["IBM Plex Sans"] = {"https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth%2Cwght%5D.ttf"},
+}
+local FontFamilies = {"Default", "Itim", "Winky Rough", "Archivo Black", "IBM Plex Sans"}
+local FontWeights = {"Default", "Light", "Regular", "SemiBold"}
+local function EnsureFontFolder()
+	if not EnsureAssetsFolder() then return false end
+	if not (fn_isfolder and fn_makefolder) then return false end
+	local ok = pcall(function() if not fn_isfolder(ASSETS_FOLDER .. "/fonts") then fn_makefolder(ASSETS_FOLDER .. "/fonts") end end)
+	return ok
+end
+local function ResolveFont(familyName, weightName)
+	local weightMap = {Light = Enum.FontWeight.Light, Regular = Enum.FontWeight.Regular, SemiBold = Enum.FontWeight.SemiBold}
+	local weight = weightMap[weightName] or Enum.FontWeight.Regular
+	if familyName == "Default" or not FontSources[familyName] then
+		if weightName == "Default" then return Fonts.SemiBold, Fonts.Regular end
+		local selected = weight == Enum.FontWeight.SemiBold and Fonts.SemiBold or Fonts.Regular
+		return selected, selected
+	end
+	local safeName = familyName:gsub("[^%w]", "")
+	local path = ASSETS_FOLDER .. "/fonts/" .. safeName .. ".ttf"
+	local familyPath = ASSETS_FOLDER .. "/fonts/" .. safeName .. ".font"
+	if not (fn_customasset and fn_writefile and EnsureFontFolder()) then return Fonts.SemiBold, Fonts.Regular end
+	local ok, fontFace = pcall(function()
+		local url = FontSources[familyName][1]
+		if not DownloadFontFile(path, url) then error("font download failed") end
+		local assetId = fn_customasset(path)
+		local familyData = {name = safeName, faces = {{name = "Regular", weight = 100, style = "normal", assetId = assetId}, {name = "Light", weight = 300, style = "normal", assetId = assetId}, {name = "SemiBold", weight = 600, style = "normal", assetId = assetId}}}
+		fn_writefile(familyPath, HttpService:JSONEncode(familyData))
+		local asset = fn_customasset(familyPath)
+		return Font.new(asset, weight, Enum.FontStyle.Normal)
+	end)
+	if not ok then return Fonts.SemiBold, Fonts.Regular end
+	return fontFace, fontFace
+end
+
+function NullUI:SetFont(familyName, weightName)
+	familyName = table.find(FontFamilies, familyName) and familyName or "Default"
+	weightName = table.find(FontWeights, weightName) and weightName or "Default"
+	self._FontFamily, self._FontWeight = familyName, weightName
+	local heading, regular = ResolveFont(familyName, weightName)
+	self.Theme.Font, self.Theme.FontRegular = heading, regular
+	for _, window in ipairs(self._Windows) do
+		if window._gui then
+			for _, object in ipairs(window._gui:GetDescendants()) do
+				if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+					pcall(function() object.FontFace = regular end)
+				end
+			end
+		end
+	end
+	return self
 end
 
 local Z = {
@@ -9474,7 +9567,7 @@ local function Serialize(value)
 		return { __t = "Enum", v = tostring(value) }
 	elseif t == "table" then
 		local out = {}
-		for i, v in ipairs(value) do out[i] = Serialize(v) end
+		for i, v in pairs(value) do out[i] = Serialize(v) end
 		return out
 	end
 	return value
@@ -9492,7 +9585,7 @@ local function Deserialize(value)
 		return ok and result or nil
 	end
 	local out = {}
-	for i, v in ipairs(value) do out[i] = Deserialize(v) end
+	for i, v in pairs(value) do out[i] = Deserialize(v) end
 	return out
 end
 
@@ -10357,11 +10450,67 @@ function NullUI:GetConfig()
 			if ok then data[flag] = Serialize(value) end
 		end
 	end
+	data.__VindUIPreferences = self:GetUISettings()
 	return data
+end
+
+function NullUI:GetUISettings()
+	local prefs = {Theme = self._ThemeName or "Dark", FontFamily = self._FontFamily or "Default", FontWeight = self._FontWeight or "Default", Density = self:GetDensity(), Colors = {}}
+	for token, color in pairs(self.Theme) do
+		if typeof(color) == "Color3" then prefs.Colors[token] = {math.floor(color.R * 255 + .5), math.floor(color.G * 255 + .5), math.floor(color.B * 255 + .5)} end
+	end
+	local windows = {}
+	for i, window in ipairs(self._Windows) do
+		local state = {TabWidth = window._TabWidth, Transparency = window._BackgroundTransparency, Background = window._BackgroundOptions, Blur = self.Config.Blur}
+		if window._gui then
+			local size, pos = window._gui.Size, window._gui.Position
+			state.Size = {size.X.Scale, size.X.Offset, size.Y.Scale, size.Y.Offset}
+			state.Position = {pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset}
+		end
+		if window._UserInfoOptions then
+			state.UserInfo = {}
+			for key, value in pairs(window._UserInfoOptions) do if type(value) == "string" or type(value) == "boolean" then state.UserInfo[key] = value end end
+		end
+		windows[i] = state
+	end
+	prefs.Windows = windows
+	return prefs
+end
+
+function NullUI:ApplyUISettings(prefs)
+	if type(prefs) ~= "table" then return false end
+	if type(prefs.Theme) == "string" and ThemePresets[prefs.Theme] then self:SetTheme(prefs.Theme) end
+	if type(prefs.Colors) == "table" then
+		local colors = {}
+		for token, rgb in pairs(prefs.Colors) do
+			if table.find(BaseThemeTokens, token) or typeof(self.Theme[token]) == "Color3" then
+				if type(rgb) == "table" and #rgb >= 3 then colors[token] = Color3.fromRGB(math.clamp(tonumber(rgb[1]) or 0, 0, 255), math.clamp(tonumber(rgb[2]) or 0, 0, 255), math.clamp(tonumber(rgb[3]) or 0, 0, 255)) end
+			end
+		end
+		if next(colors) then self:SetTheme(colors) end
+	end
+	self:SetFont(prefs.FontFamily, prefs.FontWeight)
+	if prefs.Density == "compact" or prefs.Density == "comfortable" then self:SetDensity(prefs.Density) end
+	if type(prefs.Windows) == "table" and type(prefs.Windows[1]) == "table" and type(prefs.Windows[1].Blur) == "boolean" then self:SetBlurEnabled(prefs.Windows[1].Blur) end
+	for i, state in ipairs(prefs.Windows or {}) do
+		local window = self._Windows[i]
+		if window and type(state) == "table" then
+			if state.TabWidth then window:SetTabWidth(state.TabWidth) end
+			if state.Transparency ~= nil then window:SetBackgroundTransparency(state.Transparency) end
+			if type(state.Background) == "table" then window:SetBackground(state.Background) end
+			if type(state.Size) == "table" and #state.Size == 4 and window._gui then window._gui.Size = UDim2.new(state.Size[1], state.Size[2], state.Size[3], state.Size[4]) end
+			if type(state.Position) == "table" and #state.Position == 4 and window._gui then window._gui.Position = UDim2.new(state.Position[1], state.Position[2], state.Position[3], state.Position[4]) end
+			if type(state.UserInfo) == "table" then window:SetUserInfo(state.UserInfo) end
+			if window._RefreshAppearanceSettings then pcall(window._RefreshAppearanceSettings) end
+			if window._RefreshUIPreferences then pcall(window._RefreshUIPreferences) end
+		end
+	end
+	return true
 end
 
 function NullUI:SetConfig(data, silent)
 	if type(data) ~= "table" then return false end
+	if type(data.__VindUIPreferences) == "table" then pcall(self.ApplyUISettings, self, Deserialize(data.__VindUIPreferences)) end
 	for flag, raw in pairs(data) do
 		local api = NullUI.Flags[flag]
 		if api and api.Set then
@@ -10616,17 +10765,22 @@ function Window:AddUIPreferences(group)
 	local tab = group and group:AddTab({Name = "Interface", Icon = "settings"})
 		or self:AddTab({Name = "Interface", Icon = "settings"})
 	self._PreferencesTab = tab
-	tab:AddDropdown({Text = "Density", Options = {"comfortable", "compact"}, Default = NullUI:GetDensity(), Callback = function(mode) NullUI:SetDensity(mode) end})
+	local densityDropdown = tab:AddDropdown({Text = "Density", Options = {"comfortable", "compact"}, Default = NullUI:GetDensity(), Callback = function(mode) NullUI:SetDensity(mode) end})
 	tab:AddButton({Text = "Restore window layout", Callback = function() self:ResetLayout() end})
 	tab:AddButton({Text = "Notification history", Callback = function() self:ShowNotificationHistory() end})
 	tab:AddButton({Text = "Clear notification history", Callback = function() NullUI:ClearNotificationHistory() end})
-	tab:AddDropdown({Text = "Profile name", Options = {"display", "username", "anonymous"}, Default = (self._UserInfoOptions or {}).NameMode or "display", Callback = function(mode)
+	local profileDropdown = tab:AddDropdown({Text = "Profile name", Options = {"display", "username", "anonymous"}, Default = (self._UserInfoOptions or {}).NameMode or "display", Callback = function(mode)
 		self._UserInfoOptions = self._UserInfoOptions or {}
 		self._UserInfoOptions.DisplayName = nil
 		self._UserInfoOptions.Username = nil
 		self:SetUserInfo({NameMode = mode})
 	end})
-	tab:AddTextbox({Text = "Profile image", Placeholder = "player or rbxassetid", Default = tostring((self._UserInfoOptions or {}).Avatar or "player"), Callback = function(image) self:SetUserInfo({Avatar = image ~= "" and image or "player"}) end})
+	local avatarTextbox = tab:AddTextbox({Text = "Profile image", Placeholder = "player or rbxassetid", Default = tostring((self._UserInfoOptions or {}).Avatar or "player"), Callback = function(image) self:SetUserInfo({Avatar = image ~= "" and image or "player"}) end})
+	self._RefreshUIPreferences = function()
+		densityDropdown:Set(NullUI:GetDensity(), true)
+		profileDropdown:Set((self._UserInfoOptions or {}).NameMode or "display", true)
+		avatarTextbox:Set(tostring((self._UserInfoOptions or {}).Avatar or "player"), true)
+	end
 	return tab
 end
 
@@ -11222,7 +11376,10 @@ function Window:AddAppearanceTab(options, group)
 	self._AppearanceTab = tab
 	local themeSection = tab:AddCollapsibleSection({Title = "Theme and colors"})
 	local pickers = {}
-	themeSection:AddDropdown({Text = "Theme", Options = {"Dark", "Light", "Midnight", "Forest"}, Default = NullUI._ThemeName or "Dark", Callback = function(name)
+	local themeOptions = table.clone(ThemeNames)
+	table.insert(themeOptions, "Custom")
+	local themeDropdown = themeSection:AddDropdown({Text = "Theme", Options = themeOptions, Default = table.find(themeOptions, NullUI._ThemeName) and NullUI._ThemeName or "Dark", Callback = function(name)
+		if name == "Custom" then return end
 		NullUI:SetTheme(name)
 		for token, picker in pairs(pickers) do picker:Set(NullUI.Theme[token], true) end
 	end})
@@ -11231,23 +11388,38 @@ function Window:AddAppearanceTab(options, group)
 		pickers[token] = themeSection:AddColorPicker({Text = entry[2], Default = NullUI.Theme[token], Callback = function(color) NullUI:SetTheme({[token] = color}) end})
 	end
 	local opacitySection = tab:AddCollapsibleSection({Title = "Window background", Icon = "Lucide:blend"})
- opacitySection:AddSlider({Text = "Background transparency", Description = "0 = opaque, 100 = transparent", Min = 0, Max = 100, Default = 4,
+	local windowTransparency = opacitySection:AddSlider({Text = "Background transparency", Description = "0 = opaque, 100 = transparent", Min = 0, Max = 100, Default = math.floor((self._BackgroundTransparency or 0.04) * 100 + .5),
   Callback = function(value) self:SetBackgroundTransparency(value / 100) end})
+	local fontSection = tab:AddCollapsibleSection({Title = "Typography", Icon = "Lucide:type"})
+	local fontFamilyDropdown = fontSection:AddDropdown({Text = "Font family", Options = FontFamilies, Default = NullUI._FontFamily or "Default", Callback = function(value) NullUI:SetFont(value, NullUI._FontWeight or "Default") end})
+	local fontWeightDropdown = fontSection:AddDropdown({Text = "Font weight", Options = FontWeights, Default = NullUI._FontWeight or "Default", Callback = function(value) NullUI:SetFont(NullUI._FontFamily or "Default", value) end})
  local controls = tab:AddCollapsibleSection({Title = "Control colors", Icon = "Lucide:sliders-horizontal"})
  for _, item in ipairs({{"ToggleOn","Toggle enabled"},{"ToggleOff","Toggle disabled"},{"ToggleKnobOn","Toggle knob (on)"},{"ToggleKnob","Toggle knob (off)"},{"SliderFill","Slider fill"},{"SliderKnob","Slider knob"},{"Card","Cards"}}) do
   local token = item[1]
   controls:AddColorPicker({Text = item[2], Default = NullUI.Theme[token], Callback = function(color) NullUI:SetTheme({[token] = color}) end})
  end
  local sizing = tab:AddCollapsibleSection({Title = "Layout", Icon = "Lucide:layout-dashboard"})
- sizing:AddSlider({Text = "Sidebar width", Min = 110, Max = 260, Default = self._TabWidth or 130, Callback = function(value) self:SetTabWidth(value) end})
- sizing:AddDropdown({Text = "Density", Options = {"comfortable","compact"}, Default = NullUI:GetDensity(), Callback = function(value) NullUI:SetDensity(value) end})
+	local tabWidthSlider = sizing:AddSlider({Text = "Sidebar width", Min = 110, Max = 260, Default = self._TabWidth or 130, Callback = function(value) self:SetTabWidth(value) end})
+	local densityDropdown = sizing:AddDropdown({Text = "Density", Options = {"comfortable","compact"}, Default = NullUI:GetDensity(), Callback = function(value) NullUI:SetDensity(value) end})
  sizing:AddButton({Text = "Reset window layout", Callback = function() self:ResetLayout() end})
  local imageSection = tab:AddCollapsibleSection({Title = "Background image"})
-	imageSection:AddTextbox({Text = "Image", Description = "Numeric ID or rbxassetid://...", Default = "", Callback = function(value) self:SetBackground({Image = value}) end})
-	imageSection:AddSlider({Text = "Transparency", Min = 0, Max = 100, Default = 70, Callback = function(value) self:SetBackground({Transparency = value / 100}) end})
+	local imageTextbox = imageSection:AddTextbox({Text = "Image", Description = "URL, numeric ID, or rbxassetid://...", Default = tostring((self._BackgroundOptions or {}).Image or ""), Callback = function(value) self:SetBackground({Image = value}) end})
+	local imageTransparency = imageSection:AddSlider({Text = "Transparency", Min = 0, Max = 100, Default = math.floor((((self._BackgroundOptions or {}).Transparency) or 0.7) * 100 + .5), Callback = function(value) self:SetBackground({Transparency = value / 100}) end})
 	imageSection:AddButton({Text = "Remove image", Callback = function() self:SetBackground({Image = ""}) end})
 	local effects = tab:AddCollapsibleSection({Title = "Effects"})
-	effects:AddToggle({Text = "Blur", Default = NullUI.Config.Blur, Callback = function(enabled) NullUI:SetBlurEnabled(enabled) end})
+	local blurToggle = effects:AddToggle({Text = "Blur", Default = NullUI.Config.Blur, Callback = function(enabled) NullUI:SetBlurEnabled(enabled) end})
+	self._RefreshAppearanceSettings = function()
+		themeDropdown:Set(NullUI._ThemeName or "Dark", true)
+		for token, picker in pairs(pickers) do picker:Set(NullUI.Theme[token], true) end
+		windowTransparency:Set(math.floor((self._BackgroundTransparency or 0.04) * 100 + .5), true)
+		fontFamilyDropdown:Set(NullUI._FontFamily or "Default", true)
+		fontWeightDropdown:Set(NullUI._FontWeight or "Default", true)
+		tabWidthSlider:Set(self._TabWidth or 130, true)
+		densityDropdown:Set(NullUI:GetDensity(), true)
+		imageTextbox:Set(tostring((self._BackgroundOptions or {}).Image or ""), true)
+		imageTransparency:Set(math.floor((((self._BackgroundOptions or {}).Transparency) or 0.7) * 100 + .5), true)
+		blurToggle:Set(NullUI.Config.Blur ~= false, true)
+	end
 	return tab
 end
 
