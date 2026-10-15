@@ -11427,6 +11427,7 @@ end
 local IntegrationContext = {
  ThemeValue = ThemeValue,
 	BindTheme = BindTheme,
+	DATA_FOLDER = DATA_FOLDER,
 	ASSETS_FOLDER = ASSETS_FOLDER,
 	AddContentScrollThumb = AddContentScrollThumb,
 	AddScrollbar = AddScrollbar,
@@ -14128,6 +14129,7 @@ Install = function(context)
  local ThemeValue = context.ThemeValue
 local BindTheme = context.BindTheme
 	local Corner = context.Corner
+	local DATA_FOLDER = context.DATA_FOLDER or "Zyzen"
 	local EnsureAssetsFolder = context.EnsureAssetsFolder
 	local HttpService = context.HttpService
 	local LocalPlayer = context.LocalPlayer
