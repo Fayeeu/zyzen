@@ -3141,8 +3141,9 @@ function Window:SetUserInfo(options)
 		self._UserInfoFrame, self._UserAvatar, self._UserName, self._UserHandle = frame, avatar, name, username
 	end
 	local anonymous = settings.NameMode == "anonymous"
-	self._UserName.Text = anonymous and "Anonymous" or (settings.NameMode == "username" and LocalPlayer.Name or LocalPlayer.DisplayName)
-	self._UserHandle.Text = anonymous and "" or ("@" .. LocalPlayer.Name)
+	local defaultName = settings.NameMode == "username" and LocalPlayer.Name or LocalPlayer.DisplayName
+	self._UserName.Text = anonymous and "Anonymous" or tostring(settings.DisplayName or defaultName)
+	self._UserHandle.Text = anonymous and "" or tostring(settings.Username or ("@" .. LocalPlayer.Name))
 	self._UserHandle.Visible = not anonymous
 	self._UserName.Position = UDim2.fromOffset(48, anonymous and 18 or 9)
 	self._UserAvatarRevision = (self._UserAvatarRevision or 0) + 1
@@ -10593,15 +10594,21 @@ function Window:ShowNotificationHistory()
 	self._HistoryTab._select()
 end
 
-function Window:AddUIPreferences()
+function Window:AddUIPreferences(group)
 	if self._PreferencesTab then return self._PreferencesTab end
-	local tab = self:AddTab({Name = "Interface", Icon = "settings"})
+	local tab = group and group:AddTab({Name = "Interface", Icon = "settings"})
+		or self:AddTab({Name = "Interface", Icon = "settings"})
 	self._PreferencesTab = tab
 	tab:AddDropdown({Text = "Density", Options = {"comfortable", "compact"}, Default = NullUI:GetDensity(), Callback = function(mode) NullUI:SetDensity(mode) end})
 	tab:AddButton({Text = "Restore window layout", Callback = function() self:ResetLayout() end})
 	tab:AddButton({Text = "Notification history", Callback = function() self:ShowNotificationHistory() end})
 	tab:AddButton({Text = "Clear notification history", Callback = function() NullUI:ClearNotificationHistory() end})
-	tab:AddDropdown({Text = "Profile name", Options = {"display", "username", "anonymous"}, Default = (self._UserInfoOptions or {}).NameMode or "display", Callback = function(mode) self:SetUserInfo({NameMode = mode}) end})
+	tab:AddDropdown({Text = "Profile name", Options = {"display", "username", "anonymous"}, Default = (self._UserInfoOptions or {}).NameMode or "display", Callback = function(mode)
+		self._UserInfoOptions = self._UserInfoOptions or {}
+		self._UserInfoOptions.DisplayName = nil
+		self._UserInfoOptions.Username = nil
+		self:SetUserInfo({NameMode = mode})
+	end})
 	tab:AddTextbox({Text = "Profile image", Placeholder = "player or rbxassetid", Default = tostring((self._UserInfoOptions or {}).Avatar or "player"), Callback = function(image) self:SetUserInfo({Avatar = image ~= "" and image or "player"}) end})
 	return tab
 end
@@ -11101,10 +11108,11 @@ function Window:SetBackgroundTransparency(value)
  return self
 end
 
-function Window:AddAppearanceTab(options)
+function Window:AddAppearanceTab(options, group)
 	if self._AppearanceTab then return self._AppearanceTab end
 	options = options or {}
-	local tab = self:AddTab({Name = options.Name or "Appearance", Icon = "palette"})
+	local tab = group and group:AddTab({Name = options.Name or "Appearance", Icon = "palette"})
+		or self:AddTab({Name = options.Name or "Appearance", Icon = "palette"})
 	self._AppearanceTab = tab
 	local themeSection = tab:AddCollapsibleSection({Title = "Theme and colors"})
 	local pickers = {}
