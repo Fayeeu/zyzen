@@ -389,7 +389,8 @@ local function DestroyAllAcrylicControllers()
 	table.clear(AcrylicControllers)
 end
 
-local ASSETS_FOLDER = "NullUI/Assets"
+local DATA_FOLDER = "Zyzen"
+local ASSETS_FOLDER = DATA_FOLDER .. "/Assets"
 
 local function hasFn(name)
 	local ok, fn = pcall(function()
@@ -419,7 +420,7 @@ local fn_customasset = hasFn("getcustomasset") or hasFn("getsynasset")
 local function EnsureAssetsFolder()
 	if not (fn_isfolder and fn_makefolder) then return false end
 	local ok = pcall(function()
-		if not fn_isfolder("NullUI") then fn_makefolder("NullUI") end
+		if not fn_isfolder(DATA_FOLDER) then fn_makefolder(DATA_FOLDER) end
 		if not fn_isfolder(ASSETS_FOLDER) then fn_makefolder(ASSETS_FOLDER) end
 	end)
 	return ok
@@ -427,7 +428,7 @@ end
 
 local function PrivateTabFlagPath(name)
 	local safe = tostring(name or ""):gsub("[^%w_%-]", "_")
-	return "NullUI/PrivateTab_" .. safe .. ".remember"
+	return DATA_FOLDER .. "/PrivateTab_" .. safe .. ".remember"
 end
 
 local function IsPrivateTabRemembered(name)
@@ -449,7 +450,7 @@ local function SetPrivateTabRemembered(name, remember)
 	end
 end
 
-local RunCountPath = "NullUI/RunCount.txt"
+local RunCountPath = DATA_FOLDER .. "/RunCount.txt"
 
 local function BumpRunCount()
 	local count = 1
@@ -10545,12 +10546,12 @@ function NullUI:SetUIElementValue(flag, value, silent)
 	return true
 end
 
-local CONFIGS_FOLDER = "NullUI/Configs"
+local CONFIGS_FOLDER = DATA_FOLDER .. "/Configs"
 
 local function EnsureConfigsFolder()
 	if not (fn_isfolder and fn_makefolder) then return false end
 	local ok = pcall(function()
-		if not fn_isfolder("NullUI") then fn_makefolder("NullUI") end
+		if not fn_isfolder(DATA_FOLDER) then fn_makefolder(DATA_FOLDER) end
 		if not fn_isfolder(CONFIGS_FOLDER) then fn_makefolder(CONFIGS_FOLDER) end
 	end)
 	return ok
@@ -15209,7 +15210,7 @@ function Window:AddGlobalChatPanel(opts)
 	}
 end
 
-local CLOUD_IDENTITY_PATH = "NullUI/cloud_identity.json"
+local CLOUD_IDENTITY_PATH = DATA_FOLDER .. "/cloud_identity.json"
 
 local function LoadCloudIdentity()
 	if fn_isfile and fn_readfile then
