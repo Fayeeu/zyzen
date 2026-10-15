@@ -991,7 +991,21 @@ ResolveImageAsset = function(source)
 		end
 	end
 
-	local downloadOk, body = pcall(function() return game:HttpGet(image) end)
+	local downloadOk, body = false, nil
+	local httpRequest = hasFn("request") or hasFn("http_request") or (syn and syn.request)
+	if httpRequest then
+		local requestOk, response = pcall(httpRequest, {Url = image, Method = "GET"})
+		if requestOk and type(response) == "table" then
+			local status = tonumber(response.StatusCode or response.Status)
+			if not status or (status >= 200 and status < 300) then
+				body = response.Body or response.body
+				downloadOk = type(body) == "string"
+			end
+		end
+	end
+	if not downloadOk then
+		downloadOk, body = pcall(function() return game:HttpGet(image) end)
+	end
 	local extension = downloadOk and ImageExtension(body) or nil
 	if not extension then
 		warn("[VindUI] Could not download external image: " .. image)
@@ -1237,8 +1251,11 @@ function NullUI:ShowIntro(options)
  local logo = frame(group,"LogoTile",foreground,0,UDim2.fromOffset(24,28),UDim2.fromOffset(46,46),4)
  Corner(logo,14); Stroke(logo,foreground,1,.7)
  local icon = Instance.new("ImageLabel"); icon.Name = "Logo"; icon.BackgroundTransparency = 1
-	icon.Image = ResolveImageAsset(opts.Logo or opts.Icon or "Lucide:sparkles")
- icon.ImageColor3 = opts.LogoColor or background; icon.ScaleType = Enum.ScaleType.Fit
+	local logoSource = opts.Logo or opts.Icon or "Lucide:sparkles"
+	icon.Image = ResolveImageAsset(logoSource)
+	local isExternalLogo = type(logoSource) == "string" and logoSource:match("^https?://") ~= nil
+	icon.ImageColor3 = opts.LogoColor or (isExternalLogo and Color3.new(1, 1, 1) or background)
+	icon.ScaleType = Enum.ScaleType.Fit
  icon.Position = UDim2.fromOffset(10,10); icon.Size = UDim2.fromOffset(26,26); icon.ZIndex = 5; icon.Parent = logo
  local eyebrow = label("Eyebrow",opts.Eyebrow or "WELCOME BACK",10,muted,24,14)
  eyebrow.Position = UDim2.fromOffset(84,24); eyebrow.Size = UDim2.new(1,-150,0,14); eyebrow.TextXAlignment = Enum.TextXAlignment.Left
@@ -10613,6 +10630,95 @@ function Window:AddUIPreferences(group)
 	return tab
 end
 
+function Window:AddConfigTab(group)
+	if self._ConfigTab then return self._ConfigTab end
+	local tab = group and group:AddTab({Name = "Configs", Icon = "Lucide:folder-cog"})
+		or self:AddTab({Name = "Configs", Icon = "Lucide:folder-cog"})
+	self._ConfigTab = tab
+	local selectedName, inputName
+	local configs = tab:AddDropdown({
+		Text = "Saved configs",
+		Options = {},
+		Callback = function(value) selectedName = value end,
+	})
+	tab:AddLabel("Auto-save: " .. LocalPlayer.Name)
+	tab:AddTextbox({
+		Text = "Config name",
+		Placeholder = "Name",
+		Default = "",
+		Callback = function(value) inputName = value end,
+	})
+
+	local function refresh()
+		local items, err = NullUI:ListConfigs()
+		local names = {}
+		for _, item in ipairs(items or {}) do table.insert(names, item.Name) end
+		configs:SetOptions(names)
+		if selectedName and not table.find(names, selectedName) then selectedName = nil end
+		configs:Set(selectedName, true)
+		if err and #names == 0 then
+			NullUI:Notify({Title = "Configs", Text = tostring(err), Type = "warning", Duration = 4})
+		end
+	end
+	self._ConfigTabRefresh = refresh
+
+	tab:AddButton({Text = "Create", Callback = function()
+		local name = tostring(inputName or ""):match("^%s*(.-)%s*$")
+		if name == "" then
+			NullUI:Notify({Title = "Configs", Text = "Enter a config name first.", Type = "warning"})
+			return
+		end
+		if NullUI:GetSavedConfig(name) then
+			NullUI:Notify({Title = "Configs", Text = "A config with that name already exists.", Type = "warning"})
+			return
+		end
+		local ok, err = NullUI:SaveConfig(name)
+		NullUI:Notify({Title = ok and "Config created" or "Could not create config", Text = ok and name or tostring(err), Type = ok and "success" or "error"})
+		if ok then selectedName = name; refresh() end
+	end})
+	tab:AddButton({Text = "Delete", Callback = function()
+		if not selectedName then return end
+		local ok, err = NullUI:DeleteConfig(selectedName)
+		NullUI:Notify({Title = ok and "Config deleted" or "Could not delete config", Text = ok and selectedName or tostring(err), Type = ok and "success" or "error"})
+		if ok then selectedName = nil; refresh() end
+	end})
+	tab:AddButton({Text = "Load", Callback = function()
+		if not selectedName then return end
+		local ok, err = NullUI:LoadConfig(selectedName, false)
+		NullUI:Notify({Title = ok and "Config loaded" or "Could not load config", Text = ok and selectedName or tostring(err), Type = ok and "success" or "error"})
+	end})
+	tab:AddButton({Text = "Save", Callback = function()
+		if not selectedName then return end
+		local ok, err = NullUI:SaveConfig(selectedName)
+		NullUI:Notify({Title = ok and "Config saved" or "Could not save config", Text = ok and selectedName or tostring(err), Type = ok and "success" or "error"})
+		if ok then refresh() end
+	end})
+	tab:AddButton({Text = "Refresh", Callback = refresh})
+	refresh()
+	return tab
+end
+
+function NullUI:StartAutoConfig(name)
+	if self._AutoConfigStarted then return false end
+	self._AutoConfigStarted = true
+	name = name or (LocalPlayer.Name .. "_Auto")
+	self:LoadConfig(name, true)
+	if not self:GetSavedConfig(name) then self:SaveConfig(name) end
+	local lastConfig = HttpService:JSONEncode(self:GetConfig())
+	if self._ConfigTabRefresh then self._ConfigTabRefresh() end
+	task.spawn(function()
+		while self._Root and self._Root.Parent do
+			task.wait(1)
+			local currentConfig = HttpService:JSONEncode(self:GetConfig())
+			if currentConfig ~= lastConfig then
+				local ok = self:SaveConfig(name)
+				if ok then lastConfig = currentConfig end
+			end
+		end
+	end)
+	return true
+end
+
 local function DestroyAllWindowJanitors()
 	for _, win in ipairs(NullUI._Windows) do
 		win._destroyed = true
@@ -11125,7 +11231,7 @@ function Window:AddAppearanceTab(options, group)
 		pickers[token] = themeSection:AddColorPicker({Text = entry[2], Default = NullUI.Theme[token], Callback = function(color) NullUI:SetTheme({[token] = color}) end})
 	end
 	local opacitySection = tab:AddCollapsibleSection({Title = "Window background", Icon = "Lucide:blend"})
- opacitySection:AddSlider({Text = "Background transparency", Description = "0 = opaque, 100 = transparent", Min = 0, Max = 100, Default = (self._BackgroundTransparency or 0.15) * 100,
+ opacitySection:AddSlider({Text = "Background transparency", Description = "0 = opaque, 100 = transparent", Min = 0, Max = 100, Default = 4,
   Callback = function(value) self:SetBackgroundTransparency(value / 100) end})
  local controls = tab:AddCollapsibleSection({Title = "Control colors", Icon = "Lucide:sliders-horizontal"})
  for _, item in ipairs({{"ToggleOn","Toggle enabled"},{"ToggleOff","Toggle disabled"},{"ToggleKnobOn","Toggle knob (on)"},{"ToggleKnob","Toggle knob (off)"},{"SliderFill","Slider fill"},{"SliderKnob","Slider knob"},{"Card","Cards"}}) do
