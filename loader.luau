@@ -11,6 +11,7 @@ local c={
 [10771403972]="tqd",
 [10759594563]="ctsa",
 [10773082965]="tlb",
+[10773540105]="tsq.luau",
 }
 
 local d=c[game.GameId]
