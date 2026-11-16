@@ -11472,31 +11472,90 @@ return N
 end
 
 
-local an=TweenInfo.new(0.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true)
+local an=TweenInfo.new(0.85,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true)
 local ao=TweenInfo.new(0.25,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-local ap=0.25
-local aq=0.6
+local ap=0.85
+local aq=0.94
 
-local function makeSkeletonBar(ar,as,at,au,av)
-local aw=d("Frame",{
+local function makeSkeletonBar(ar,as,at,au,av,aw)
+local ax=d("Frame",{
 Name="Bar",
-BackgroundColor3=e.Muted,
+BackgroundColor3=e.Foreground,
 BackgroundTransparency=ap,
 BorderSizePixel=0,
 Position=as,
 Size=at,
-ZIndex=21,
+ZIndex=aw or 21,
 Parent=ar,
 },{af.Corner(au)})
-table.insert(av,aw)
-return aw
+table.insert(av,ax)
+return ax
+end
+
+local function makeGlassCard(ar,as,at,au,av)
+local aw=ad.Current or{}
+local ax=aw.Background or Color3.fromRGB(13,15,18)
+local ay=0.2126*ax.R+0.7152*ax.G+0.0722*ax.B
+local az=ay<0.5
+local aA=aw.Foreground or Color3.new(1,1,1)
+local aB=aw.Card or ax
+
+local aC=af.Stroke(e.Foreground)
+aC.Transparency=0
+d("UIGradient",{
+Rotation=135,
+Transparency=NumberSequence.new(if az then{
+NumberSequenceKeypoint.new(0,0.86),
+NumberSequenceKeypoint.new(0.35,0.93),
+NumberSequenceKeypoint.new(0.75,0.96),
+NumberSequenceKeypoint.new(1,0.91),
+}else{
+NumberSequenceKeypoint.new(0,0.76),
+NumberSequenceKeypoint.new(0.5,0.88),
+NumberSequenceKeypoint.new(1,0.82),
+}),
+Parent=aC,
+})
+
+local aD=d("UIGradient",{
+Rotation=135,
+Transparency=NumberSequence.new(if az then{
+NumberSequenceKeypoint.new(0,0.76),
+NumberSequenceKeypoint.new(0.5,0.88),
+NumberSequenceKeypoint.new(1,0.82),
+}else{
+NumberSequenceKeypoint.new(0,0.62),
+NumberSequenceKeypoint.new(0.5,0.78),
+NumberSequenceKeypoint.new(1,0.70),
+}),
+})
+
+local aE=d("Frame",{
+Name="Card",
+BackgroundColor3=if az then aB:Lerp(aA,0.08)else aB,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ClipsDescendants=true,
+Position=as,
+Size=at,
+ZIndex=21,
+Parent=ar,
+},{af.Corner(ad.Radius.Xl),aC,aD})
+
+table.insert(au,aE)
+table.insert(av,aC)
+return aE
 end
 
 function F.SetLoading(ar,as)
 if as then
 if ar._skeleton then return end
 local at={}
-local au=d("Frame",{
+local au={}
+local av={}
+local aw={}
+
+local ax=d("Frame",{
 Name="Skeleton",
 BackgroundTransparency=1,
 Position=ar._nav.Position,
@@ -11504,60 +11563,104 @@ Size=ar._nav.Size,
 ZIndex=20,
 Parent=ar._nav.Parent,
 })
-for av=0,7 do
-local aw=12+av*36
-local ax=({0.55,0.42,0.6,0.5,0.38,0.58,0.46,0.52})[av+1]
-makeSkeletonBar(au,UDim2.fromOffset(16,aw),UDim2.fromOffset(16,16),ad.Radius.Sm,at)
-makeSkeletonBar(au,UDim2.new(0,42,0,aw+3),UDim2.new(ax,-42,0,10),ad.Radius.Full,at)
+
+
+makeSkeletonBar(ax,UDim2.fromOffset(16,12),UDim2.fromOffset(42,8),ad.Radius.Full,at)
+
+
+local ay=d("Frame",{
+Name="ActivePill",
+BackgroundColor3=e.SidebarAccent,
+BackgroundTransparency=0.45,
+BorderSizePixel=0,
+Position=UDim2.fromOffset(8,30),
+Size=UDim2.new(1,-16,0,32),
+ZIndex=20,
+Parent=ax,
+},{af.Corner(ad.Radius.Md)})
+table.insert(aw,ay)
+
+local az={0.58,0.46,0.62,0.50,0.42,0.56}
+for aA=0,5 do
+local aB=38+aA*36
+local aC=az[aA+1]
+makeSkeletonBar(ax,UDim2.fromOffset(18,aB),UDim2.fromOffset(16,16),ad.Radius.Sm,at)
+makeSkeletonBar(ax,UDim2.new(0,42,0,aB+3),UDim2.new(aC,-42,0,10),ad.Radius.Full,at)
 end
 
-local av=d("Frame",{
+
+local aA=d("Frame",{
 Name="Skeleton",
-BackgroundColor3=e.Background,
-BackgroundTransparency=0,
+BackgroundTransparency=1,
 BorderSizePixel=0,
 Position=ar._pages.Position,
 Size=ar._pages.Size,
 ZIndex=20,
 Parent=ar._pages.Parent,
 })
-makeSkeletonBar(av,UDim2.fromOffset(20,18),UDim2.new(0.32,0,0,14),ad.Radius.Full,at)
-makeSkeletonBar(av,UDim2.fromOffset(20,40),UDim2.new(0.5,0,0,10),ad.Radius.Full,at)
 
-local aw={}
-for ax=0,1 do
-local ay=d("Frame",{
-Name="Card",
-BackgroundColor3=e.Card,
+
+makeSkeletonBar(aA,UDim2.fromOffset(20,18),UDim2.new(0.28,0,0,20),ad.Radius.Full,at)
+makeSkeletonBar(aA,UDim2.fromOffset(20,46),UDim2.new(0.42,0,0,12),ad.Radius.Full,at)
+makeSkeletonBar(aA,UDim2.fromOffset(20,70),UDim2.fromOffset(104,28),ad.Radius.Md,at)
+makeSkeletonBar(aA,UDim2.fromOffset(132,70),UDim2.fromOffset(104,28),ad.Radius.Md,at)
+makeSkeletonBar(aA,UDim2.new(1,-124,0,16),UDim2.fromOffset(100,88),ad.Radius.Lg,at)
+
+
+local aB=122
+local aC={
+{x=UDim2.fromOffset(18,aB),w=UDim2.new(0.5,-24,0,176),rows=3},
+{x=UDim2.new(0.5,6,0,aB),w=UDim2.new(0.5,-24,0,176),rows=3},
+{x=UDim2.fromOffset(18,aB+190),w=UDim2.new(1,-36,0,128),rows=2},
+}
+
+for aD,aE in ipairs(aC)do
+local aF=makeGlassCard(aA,aE.x,aE.w,au,av)
+
+makeSkeletonBar(aF,UDim2.fromOffset(14,14),UDim2.new(0.36,0,0,12),ad.Radius.Full,at,22)
+makeSkeletonBar(aF,UDim2.fromOffset(14,32),UDim2.new(0.55,0,0,8),ad.Radius.Full,at,22)
+for aG=0,aE.rows-1 do
+local aH=54+aG*38
+
+local aI=d("Frame",{
+Name="Divider",
+BackgroundColor3=e.Foreground,
+BackgroundTransparency=0.93,
 BorderSizePixel=0,
-Position=UDim2.fromOffset(16,70+ax*150),
-Size=UDim2.new(1,-32,0,134),
-ZIndex=21,
-Parent=av,
-},{af.Corner(ad.Radius.Xl)})
-table.insert(aw,ay)
-for az=0,2 do
-local aA=16+az*40
-makeSkeletonBar(ay,UDim2.fromOffset(16,aA),UDim2.new(0.38,0,0,12),ad.Radius.Full,at).ZIndex=22
-makeSkeletonBar(ay,UDim2.fromOffset(16,aA+18),UDim2.new(0.56,0,0,9),ad.Radius.Full,at).ZIndex=22
-makeSkeletonBar(ay,UDim2.new(1,-60,0,aA+4),UDim2.fromOffset(44,20),ad.Radius.Full,at).ZIndex=22
+Position=UDim2.fromOffset(14,aH-6),
+Size=UDim2.new(1,-28,0,1),
+ZIndex=22,
+Parent=aF,
+})
+table.insert(at,aI)
+makeSkeletonBar(aF,UDim2.fromOffset(14,aH+4),UDim2.new(0.42,0,0,10),ad.Radius.Full,at,22)
+makeSkeletonBar(aF,UDim2.fromOffset(14,aH+19),UDim2.new(0.28,0,0,7),ad.Radius.Full,at,22)
+makeSkeletonBar(aF,UDim2.new(1,-54,0,aH+6),UDim2.fromOffset(40,18),ad.Radius.Full,at,22)
 end
 end
 
-local ax={}
-for ay,az in ipairs(at)do
-local aA=c:Create(az,an,{BackgroundTransparency=aq})
-aA:Play()
-table.insert(ax,aA)
+local aD={}
+for aE,aF in ipairs(at)do
+if aF.Name~="Divider"then
+local aG=c:Create(aF,an,{BackgroundTransparency=aq})
+task.delay((aE%5)*0.06,function()
+if ar._skeleton then
+aG:Play()
+end
+end)
+table.insert(aD,aG)
+end
 end
 
 ar._nav.Visible=false
 ar._skeleton={
-nav=au,
-page=av,
+nav=ax,
+page=aA,
 bars=at,
-cards=aw,
-tweens=ax,
+cards=au,
+strokes=av,
+pills=aw,
+tweens=aD,
 }
 return
 end
@@ -11576,7 +11679,12 @@ end
 for au,av in ipairs(at.cards)do
 ad.Tween(av,{BackgroundTransparency=1},ao)
 end
-ad.Tween(at.page,{BackgroundTransparency=1},ao)
+for au,av in ipairs(at.strokes or{})do
+ad.Tween(av,{Transparency=1},ao)
+end
+for au,av in ipairs(at.pills or{})do
+ad.Tween(av,{BackgroundTransparency=1},ao)
+end
 task.delay(ao.Time+0.05,function()
 at.nav:Destroy()
 at.page:Destroy()
