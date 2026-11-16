@@ -9649,56 +9649,57 @@ local ae=a.Theme()
 local af=ae.Token
 local ag=a.Fonts()
 local ah=a.Icons()
-local ai={}
-ai.__index=ai
+local ai=a.h()
+local aj={}
+aj.__index=aj
 
-local aj=16
 local ak=16
+local al=16
 
-local function columnSide(al)
-if al==nil or al==false then return nil end
-if al==1 then return"Left"end
-if al==2 then return"Right"end
-local am=string.lower(tostring(al))
-if am=="left"then return"Left"end
-if am=="right"then return"Right"end
+local function columnSide(am)
+if am==nil or am==false then return nil end
+if am==1 then return"Left"end
+if am==2 then return"Right"end
+local b=string.lower(tostring(am))
+if b=="left"then return"Left"end
+if b=="right"then return"Right"end
 return nil
 end
 
-function ai.new(al,am,b,c,d)
+function aj.new(am,b,c,d,e)
 return setmetatable({
-Title=d,
-_window=al,
-_page=am,
-_item=b,
-_label=c,
+Title=e,
+_window=am,
+_page=b,
+_item=c,
+_label=d,
 _order=0,
-},ai)
+},aj)
 end
 
-function ai._ensureColumns(al,am)
-if al._columns then return al._columns end
-am=am or{}
-local b=am.Gap or aj
-local c=am.Spacing or ak
-local d=al._window
-local e=al._page
-local f=17
-al._order+=1
-local g=ad("Frame",{
+function aj._ensureColumns(am,b)
+if am._columns then return am._columns end
+b=b or{}
+local c=b.Gap or ak
+local d=b.Spacing or al
+local e=am._window
+local f=am._page
+local g=17
+am._order+=1
+local h=ad("Frame",{
 Name="Columns",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,300),
-LayoutOrder=al._order,
-Parent=e,
-},{ac.List(b,Enum.FillDirection.Horizontal)})
+LayoutOrder=am._order,
+Parent=f,
+},{ac.List(c,Enum.FillDirection.Horizontal)})
 
-local function makeColumn(h,i)
+local function makeColumn(i,j)
 return ad("ScrollingFrame",{
-Name=h,
+Name=i,
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(0.5,-b/2,1,0),
+Size=UDim2.new(0.5,-c/2,1,0),
 CanvasSize=UDim2.new(),
 AutomaticCanvasSize=Enum.AutomaticSize.Y,
 ScrollBarThickness=3,
@@ -9706,40 +9707,40 @@ ScrollBarImageColor3=af.Border,
 ScrollingDirection=Enum.ScrollingDirection.Y,
 VerticalScrollBarInset=Enum.ScrollBarInset.None,
 ElasticBehavior=Enum.ElasticBehavior.Never,
-LayoutOrder=i,
-Parent=g,
+LayoutOrder=j,
+Parent=h,
 },{
 ac.Padding(1,6,1,1),
-ac.List(c),
+ac.List(d),
 })
 end
 
 
 local function fitHeight()
-local h=d._fit or 1
-if h<=0 then h=1 end
-local i=e.AbsoluteSize.Y/h-f
-if i>50 then
-g.Size=UDim2.new(1,0,0,math.floor(i))
+local i=e._fit or 1
+if i<=0 then i=1 end
+local j=f.AbsoluteSize.Y/i-g
+if j>50 then
+h.Size=UDim2.new(1,0,0,math.floor(j))
 end
 end
-d._maid:Connect(e:GetPropertyChangedSignal"AbsoluteSize",fitHeight)
+e._maid:Connect(f:GetPropertyChangedSignal"AbsoluteSize",fitHeight)
 fitHeight()
 
-al._columns={
-Instance=g,
+am._columns={
+Instance=h,
 Left=makeColumn("Left",1),
 Right=makeColumn("Right",2),
 }
-return al._columns
+return am._columns
 end
 
-local function makeColumnHandle(al,am,b)
-local c={Instance=am,Side=b}
-function c.AddSection(d,e,f)
-return al:AddSection(e,f,b)
+local function makeColumnHandle(am,b,c)
+local d={Instance=b,Side=c}
+function d.AddSection(e,f,g)
+return am:AddSection(f,g,c)
 end
-return c
+return d
 end
 
 
@@ -9747,207 +9748,252 @@ end
 
 
 
-function ai.AddColumns(al,am)
-local b=al:_ensureColumns(am)
+function aj.AddColumns(am,b)
+local c=am:_ensureColumns(b)
 return{
-Instance=b.Instance,
-Left=makeColumnHandle(al,b.Left,"Left"),
-Right=makeColumnHandle(al,b.Right,"Right"),
+Instance=c.Instance,
+Left=makeColumnHandle(am,c.Left,"Left"),
+Right=makeColumnHandle(am,c.Right,"Right"),
 }
 end
 
-function ai.AddSection(al,am,b,c)
-local d={}
-if type(am)=="string"then
-d={Title=am,Description=b}
-elseif type(am)=="table"then
-d=am
+function aj.AddSection(am,b,c,d)
+local e={}
+if type(b)=="string"then
+e={Title=b,Description=c}
+elseif type(b)=="table"then
+e=b
 end
-local e=columnSide(c or d.Column or d.Side)
-local f
-if e then
-f=al:_ensureColumns()[e]
+local f=columnSide(d or e.Column or e.Side)
+local g
+if f then
+g=am:_ensureColumns()[f]
 end
-al._order+=1
-return aa.new(al,d,al._order,f)
+am._order+=1
+return aa.new(am,e,am._order,g)
 end
-function ai.Select(al)
-al._window:SelectTab(al)
+function aj.Select(am)
+am._window:SelectTab(am)
 end
 
-function ai.AddWelcome(al,am)
-am=am or{}
-local b=al._page
-al._order+=1
+function aj.AddWelcome(am,b)
+b=b or{}
+local c=am._page
+am._order+=1
 
-local c=ad("Frame",{
+local d=ad("Frame",{
 Name="WelcomePage",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
-LayoutOrder=al._order,
-Parent=b,
+LayoutOrder=am._order,
+Parent=c,
 },{
 ac.Padding(4,4,4,4),
 ac.List(14),
 })
 
 
-local d=ad("Frame",{
+local e=ad("Frame",{
 Name="Hero",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,128),
 LayoutOrder=1,
-Parent=c,
+Parent=d,
 })
 
-local e=ad("Frame",{
+local f=ad("Frame",{
 Name="Left",
 BackgroundTransparency=1,
 Size=UDim2.new(1,-140,1,0),
-Parent=d,
+Parent=e,
 },{
 ac.List(4),
 })
 
 ac.Text{
 Name="WelcomeTitle",
-Text=am.Title or"Welcome",
+Text=b.Title or"Welcome",
 TextColor3=af.Foreground,
 FontFace=ag.Bold,
 TextSize=28,
 Size=UDim2.new(1,0,0,32),
 LayoutOrder=1,
-Parent=e,
+Parent=f,
 }
 
-local f=ac.Text{
+local g=ac.Text{
 Name="WelcomeSubtitle",
-Text=am.Subtitle or"Zyzen <font color=\"#4477f2\">HUB</font>",
+Text=b.Subtitle or"Zyzen <font color=\"#4477f2\">HUB</font>",
 RichText=true,
 TextColor3=af.Foreground,
 FontFace=ag.Bold,
 TextSize=18,
 Size=UDim2.new(1,0,0,24),
 LayoutOrder=2,
-Parent=e,
+Parent=f,
 }
-ac.Padding(0,0,0,24).Parent=f
+ac.Padding(0,0,0,24).Parent=g
 
-local g=ad("Frame",{
+local h=ad("Frame",{
 Name="DiscordButtons",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,42),
 LayoutOrder=3,
-Parent=e,
+Parent=f,
 },{
 ac.Padding(10,0,0,0),
 ac.List(8,Enum.FillDirection.Horizontal),
 })
 
-local h=ad("TextButton",{
-Name="JoinDiscord",
-Text=am.JoinText or"Join Discord",
-TextColor3=af.PrimaryForeground,
-BackgroundColor3=af.Primary,
-FontFace=ag.Medium,
-TextSize=ae.TextSize.Sm,
-AutoButtonColor=false,
-Size=UDim2.fromOffset(118,32),
+local i=ai.new(am._window._maid,{
+Title=b.JoinText or"Join Discord",
+Variant=b.JoinVariant or"Primary",
+Size="Sm",
 LayoutOrder=1,
-Parent=g,
-},{
-ac.Corner(8),
+Callback=b.OnJoin,
 })
+i.Parent=h
+i.Visible=true
 
-local i=ad("TextButton",{
-Name="CopyDiscord",
-Text=am.CopyText or"Copy Discord",
-TextColor3=af.Foreground,
-BackgroundColor3=af.Card,
-FontFace=ag.Medium,
-TextSize=ae.TextSize.Sm,
-AutoButtonColor=false,
-Size=UDim2.fromOffset(118,32),
+local j=ai.new(am._window._maid,{
+Title=b.CopyText or"Copy Discord",
+Variant=b.CopyVariant or"Outline",
+Size="Sm",
 LayoutOrder=2,
-Parent=g,
-},{
-ac.Corner(8),
-ac.Stroke(af.Border,1),
+Callback=b.OnCopy,
 })
+j.Parent=h
+j.Visible=true
 
-if am.OnJoin then
-al._window._maid:Connect(h.Activated,am.OnJoin)
-end
-if am.OnCopy then
-al._window._maid:Connect(i.Activated,am.OnCopy)
-end
-
-local j=ad("ImageLabel",{
+local k=ad("ImageLabel",{
 Name="Logo",
 BackgroundTransparency=1,
 ScaleType=Enum.ScaleType.Fit,
 AnchorPoint=Vector2.new(1,0.5),
 Position=UDim2.new(1,-6,0.5,0),
 Size=UDim2.fromOffset(122,122),
-Parent=d,
+Parent=e,
 },{
 ac.Corner(12),
 })
-local k=am.Logo or am.Icon
-if k and k~=""then
-ah.Apply(j,k,am.IsGif==true)
+local l=b.Logo or b.Icon
+if l and l~=""then
+ah.Apply(k,l,b.IsGif==true)
 end
 
 
 ac.Text{
 Name="AnnounceHeader",
-Text=am.AnnounceTitle or"ANNOUNCE",
+Text=b.AnnounceTitle or"ANNOUNCE",
 TextColor3=af.Foreground,
 FontFace=ag.Bold,
 TextSize=20,
 Size=UDim2.new(1,0,0,26),
 LayoutOrder=2,
-Parent=c,
+Parent=d,
 }
 
 
-local l=ad("Frame",{
+local m=ac.Stroke(af.Foreground)
+m.Transparency=0
+local n=ad("UIGradient",{
+Rotation=135,
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.86),
+NumberSequenceKeypoint.new(0.35,0.93),
+NumberSequenceKeypoint.new(0.75,0.96),
+NumberSequenceKeypoint.new(1,0.91),
+},
+Parent=m,
+})
+
+local o=ad("UIGradient",{
+Rotation=135,
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.76),
+NumberSequenceKeypoint.new(0.5,0.88),
+NumberSequenceKeypoint.new(1,0.82),
+},
+})
+
+local p=ad("Frame",{
 Name="AnnounceCard",
 BackgroundColor3=af.Card,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ClipsDescendants=true,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
 LayoutOrder=3,
-Parent=c,
+Parent=d,
 },{
-ac.Corner(8),
-ac.Stroke(af.Border,1),
+ac.Corner(ae.Radius.Xl),
+m,
+o,
 ac.Padding(12,14,14,14),
 ac.List(10),
 ad("UISizeConstraint",{MinSize=Vector2.new(0,160)}),
 })
 
-local m=ad("Frame",{
+local function applyCardTheme(q)
+local r=q or ae.Current
+local s=r.Background or Color3.fromRGB(13,15,18)
+local t=0.2126*s.R+0.7152*s.G+0.0722*s.B
+local u=t<0.5
+local v=r.Foreground or Color3.new(1,1,1)
+local w=r.Card or s
+
+p.BackgroundColor3=if u then w:Lerp(v,0.08)else w
+if u then
+o.Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.76),
+NumberSequenceKeypoint.new(0.5,0.88),
+NumberSequenceKeypoint.new(1,0.82),
+}
+n.Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.86),
+NumberSequenceKeypoint.new(0.35,0.93),
+NumberSequenceKeypoint.new(0.75,0.96),
+NumberSequenceKeypoint.new(1,0.91),
+}
+else
+o.Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.62),
+NumberSequenceKeypoint.new(0.5,0.78),
+NumberSequenceKeypoint.new(1,0.70),
+}
+n.Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.76),
+NumberSequenceKeypoint.new(0.5,0.88),
+NumberSequenceKeypoint.new(1,0.82),
+}
+end
+end
+applyCardTheme(ae.Current)
+am._window._maid:Connect(ae.Changed,applyCardTheme)
+
+local q=ad("Frame",{
 Name="Header",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,20),
 LayoutOrder=1,
-Parent=l,
+Parent=p,
 })
 
-local n=ac.Text{
+local r=ac.Text{
 Name="Status",
-Text=am.Status or"RELEASED BETA",
-TextColor3=am.StatusColor or Color3.fromRGB(34,197,94),
+Text=b.Status or"RELEASED BETA",
+TextColor3=b.StatusColor or Color3.fromRGB(34,197,94),
 FontFace=ag.Bold,
 TextSize=12,
 Size=UDim2.new(0.6,0,1,0),
-Parent=m,
+Parent=q,
 }
 
-local o=ac.Text{
+local s=ac.Text{
 Name="Tag",
-Text=am.AnnounceTag or"ประกาศ",
+Text=b.AnnounceTag or"ประกาศ",
 TextColor3=af.Foreground,
 FontFace=ag.Medium,
 TextSize=14,
@@ -9955,36 +10001,36 @@ TextXAlignment=Enum.TextXAlignment.Right,
 AnchorPoint=Vector2.new(1,0),
 Position=UDim2.fromScale(1,0),
 Size=UDim2.new(0.4,0,1,0),
-Parent=m,
+Parent=q,
 }
 
-local p=ac.Text{
+local t=ac.Text{
 Name="Body",
-Text=am.Body or"Bugs Fix :)",
+Text=b.Body or"Bugs Fix :)",
 RichText=true,
 TextWrapped=true,
-TextColor3=am.BodyColor or Color3.fromRGB(234,179,8),
+TextColor3=b.BodyColor or Color3.fromRGB(234,179,8),
 FontFace=ag.Medium,
 TextSize=12,
 TextYAlignment=Enum.TextYAlignment.Top,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
 LayoutOrder=2,
-Parent=l,
+Parent=p,
 }
 
-local q=ad("Frame",{
+local u=ad("Frame",{
 Name="UpdateLog",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
 LayoutOrder=3,
-Parent=l,
+Parent=p,
 },{
 ac.List(6),
 })
 
-local r={
+local v={
 NEW=Color3.fromRGB(34,197,94),
 ADD=Color3.fromRGB(34,197,94),
 FIX=Color3.fromRGB(234,179,8),
@@ -9992,39 +10038,39 @@ UPD=Color3.fromRGB(68,119,242),
 REM=Color3.fromRGB(239,68,68),
 }
 
-local function renderUpdates(s)
-for t,u in ipairs(q:GetChildren())do
-if u:IsA"GuiObject"then
-u:Destroy()
+local function renderUpdates(w)
+for x,y in ipairs(u:GetChildren())do
+if y:IsA"GuiObject"then
+y:Destroy()
 end
 end
-if type(s)~="table"or#s==0 then
-q.Visible=false
+if type(w)~="table"or#w==0 then
+u.Visible=false
 return
 end
-q.Visible=true
+u.Visible=true
 
-for t,u in ipairs(s)do
-local v,w,x,y
-if type(u)=="table"then
-v=tostring(u.Tag or u.Type or"UPD")
-w=u.Version and tostring(u.Version)or nil
-x=tostring(u.Text or u.Desc or u[1]or"")
-y=u.Color or r[string.upper(v)]or af.Primary
+for x,y in ipairs(w)do
+local z,A,B,C
+if type(y)=="table"then
+z=tostring(y.Tag or y.Type or"UPD")
+A=y.Version and tostring(y.Version)or nil
+B=tostring(y.Text or y.Desc or y[1]or"")
+C=y.Color or v[string.upper(z)]or af.Primary
 else
-v="UPD"
-x=tostring(u)
-y=af.Primary
+z="UPD"
+B=tostring(y)
+C=af.Primary
 end
 
-local z=ad("Frame",{
-Name="Item_"..t,
-BackgroundColor3=af.Background,
-BackgroundTransparency=0.35,
+local D=ad("Frame",{
+Name="Item_"..x,
+BackgroundColor3=af.Foreground,
+BackgroundTransparency=0.94,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
-LayoutOrder=t,
-Parent=q,
+LayoutOrder=x,
+Parent=u,
 },{
 ac.Corner(6),
 ac.Padding(6,8,6,8),
@@ -10033,22 +10079,22 @@ ac.List(8,Enum.FillDirection.Horizontal),
 
 ad("TextLabel",{
 Name="Badge",
-Text=string.upper(v),
+Text=string.upper(z),
 TextColor3=Color3.fromRGB(15,17,21),
-BackgroundColor3=y,
+BackgroundColor3=C,
 FontFace=ag.Bold,
 TextSize=10,
 Size=UDim2.fromOffset(42,18),
 LayoutOrder=1,
-Parent=z,
+Parent=D,
 },{
 ac.Corner(4),
 })
 
-local A=w and(string.format("[%s] %s",w,x))or x
+local E=A and(string.format("[%s] %s",A,B))or B
 ac.Text{
 Name="Desc",
-Text=A,
+Text=E,
 RichText=true,
 TextWrapped=true,
 TextColor3=af.Foreground,
@@ -10057,56 +10103,56 @@ TextSize=12,
 Size=UDim2.new(1,-54,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
 LayoutOrder=2,
-Parent=z,
+Parent=D,
 }
 end
 end
 
-renderUpdates(am.Updates or am.UpdateLog)
+renderUpdates(b.Updates or b.UpdateLog)
 
 return{
-Instance=c,
-SetSubtitle=function(s,t)f.Text=tostring(t)end,
-SetStatus=function(s,t)n.Text=tostring(t)end,
-SetAnnounceTag=function(s,t)o.Text=tostring(t)end,
-SetBody=function(s,t)p.Text=tostring(t)end,
-SetUpdates=function(s,t)renderUpdates(t)end,
+Instance=d,
+SetSubtitle=function(w,x)g.Text=tostring(x)end,
+SetStatus=function(w,x)r.Text=tostring(x)end,
+SetAnnounceTag=function(w,x)s.Text=tostring(x)end,
+SetBody=function(w,x)t.Text=tostring(x)end,
+SetUpdates=function(w,x)renderUpdates(x)end,
 }
 end
 
 
-function ai.AddThemeSettings(al)
+function aj.AddThemeSettings(am)
 assert(type(ab)=="table",
 "AddThemeSettings: ThemeSettings is not a table")
 
 assert(type(ab.Theme)=="function",
 "AddThemeSettings: ThemeSettings.Theme is missing or not a function")
 
-return ab.Theme(al)
+return ab.Theme(am)
 end
 
 
-function ai.AddConfigSettings(al,am)
-ab.Configs(al,am)
+function aj.AddConfigSettings(am,b)
+ab.Configs(am,b)
 end
 
-function ai.SetBadge(al,am)
-local b=al._badge
-local c=""
-if am~=nil then
-c=tostring(am)
+function aj.SetBadge(am,b)
+local c=am._badge
+local d=""
+if b~=nil then
+d=tostring(b)
 end
-if b:IsA"TextLabel"then
-b.Text=c
+if c:IsA"TextLabel"then
+c.Text=d
 end
-if b:IsA"Frame"then
-b.Visible=c~=""
+if c:IsA"Frame"then
+c.Visible=d~=""
 return
 end
-b.Visible=c~=""and not al._window._collapsed
+c.Visible=d~=""and not am._window._collapsed
 end
 
-return ai
+return aj
 end
 
 function a.s()
