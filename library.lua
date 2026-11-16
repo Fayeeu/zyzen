@@ -11600,48 +11600,51 @@ Parent=ar._pages.Parent,
 })
 
 
-makeSkeletonBar(aA,UDim2.fromOffset(20,18),UDim2.new(0.28,0,0,20),ad.Radius.Full,at)
-makeSkeletonBar(aA,UDim2.fromOffset(20,46),UDim2.new(0.42,0,0,12),ad.Radius.Full,at)
-makeSkeletonBar(aA,UDim2.fromOffset(20,70),UDim2.fromOffset(104,28),ad.Radius.Md,at)
-makeSkeletonBar(aA,UDim2.fromOffset(132,70),UDim2.fromOffset(104,28),ad.Radius.Md,at)
-makeSkeletonBar(aA,UDim2.new(1,-124,0,16),UDim2.fromOffset(100,88),ad.Radius.Lg,at)
+makeSkeletonBar(aA,UDim2.fromOffset(20,18),UDim2.fromOffset(170,26),ad.Radius.Full,at)
+makeSkeletonBar(aA,UDim2.fromOffset(44,52),UDim2.fromOffset(200,16),ad.Radius.Full,at)
+makeSkeletonBar(aA,UDim2.fromOffset(20,82),UDim2.fromOffset(112,30),ad.Radius.Md,at)
+makeSkeletonBar(aA,UDim2.fromOffset(140,82),UDim2.fromOffset(112,30),ad.Radius.Md,at)
+makeSkeletonBar(aA,UDim2.new(1,-142,0,16),UDim2.fromOffset(122,122),ad.Radius.Lg,at)
 
 
-local aB=122
-local aC={
-{x=UDim2.fromOffset(18,aB),w=UDim2.new(0.5,-24,0,176),rows=3},
-{x=UDim2.new(0.5,6,0,aB),w=UDim2.new(0.5,-24,0,176),rows=3},
-{x=UDim2.fromOffset(18,aB+190),w=UDim2.new(1,-36,0,128),rows=2},
-}
+makeSkeletonBar(aA,UDim2.fromOffset(20,152),UDim2.fromOffset(126,18),ad.Radius.Full,at)
 
-for aD,aE in ipairs(aC)do
-local aF=makeGlassCard(aA,aE.x,aE.w,au,av)
 
-makeSkeletonBar(aF,UDim2.fromOffset(14,14),UDim2.new(0.36,0,0,12),ad.Radius.Full,at,22)
-makeSkeletonBar(aF,UDim2.fromOffset(14,32),UDim2.new(0.55,0,0,8),ad.Radius.Full,at,22)
-for aG=0,aE.rows-1 do
-local aH=54+aG*38
+local aB=makeGlassCard(
+aA,
+UDim2.fromOffset(18,184),
+UDim2.new(1,-36,0,232),
+au,
+av
+)
 
-local aI=d("Frame",{
-Name="Divider",
+makeSkeletonBar(aB,UDim2.fromOffset(14,14),UDim2.fromOffset(88,12),ad.Radius.Full,at,22)
+makeSkeletonBar(aB,UDim2.new(1,-68,0,14),UDim2.fromOffset(54,12),ad.Radius.Full,at,22)
+
+makeSkeletonBar(aB,UDim2.fromOffset(14,38),UDim2.fromOffset(64,10),ad.Radius.Full,at,22)
+
+
+local aC={0.62,0.48,0.68,0.54}
+for aD=0,3 do
+local aE=62+aD*40
+local aF=d("Frame",{
+Name="LogRow",
 BackgroundColor3=e.Foreground,
-BackgroundTransparency=0.93,
+BackgroundTransparency=0.94,
 BorderSizePixel=0,
-Position=UDim2.fromOffset(14,aH-6),
-Size=UDim2.new(1,-28,0,1),
+Position=UDim2.fromOffset(14,aE),
+Size=UDim2.new(1,-28,0,32),
 ZIndex=22,
-Parent=aF,
-})
-table.insert(at,aI)
-makeSkeletonBar(aF,UDim2.fromOffset(14,aH+4),UDim2.new(0.42,0,0,10),ad.Radius.Full,at,22)
-makeSkeletonBar(aF,UDim2.fromOffset(14,aH+19),UDim2.new(0.28,0,0,7),ad.Radius.Full,at,22)
-makeSkeletonBar(aF,UDim2.new(1,-54,0,aH+6),UDim2.fromOffset(40,18),ad.Radius.Full,at,22)
-end
+Parent=aB,
+},{af.Corner(6)})
+table.insert(at,aF)
+makeSkeletonBar(aF,UDim2.fromOffset(8,7),UDim2.fromOffset(42,18),4,at,23)
+makeSkeletonBar(aF,UDim2.fromOffset(58,10),UDim2.new(aC[aD+1],-58,0,11),ad.Radius.Full,at,23)
 end
 
 local aD={}
 for aE,aF in ipairs(at)do
-if aF.Name~="Divider"then
+if aF.Name~="LogRow"then
 local aG=c:Create(aF,an,{BackgroundTransparency=aq})
 task.delay((aE%5)*0.06,function()
 if ar._skeleton then
@@ -11653,6 +11656,7 @@ end
 end
 
 ar._nav.Visible=false
+ar._pages.Visible=false
 ar._skeleton={
 nav=ax,
 page=aA,
@@ -11669,6 +11673,7 @@ local at=ar._skeleton
 if not at then return end
 ar._skeleton=nil
 ar._nav.Visible=true
+ar._pages.Visible=true
 
 for au,av in ipairs(at.tweens)do
 av:Cancel()
