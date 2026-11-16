@@ -9971,9 +9971,12 @@ NumberSequenceKeypoint.new(1,0.82),
 end
 end
 applyCardTheme(ae.Current)
-am._window._maid:Connect(ae.Changed,applyCardTheme)
+local q=am._window.Library and am._window.Library.ThemeChanged
+if q then
+am._window._maid:Connect(q,applyCardTheme)
+end
 
-local q=ad("Frame",{
+local r=ad("Frame",{
 Name="Header",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,20),
@@ -9981,17 +9984,17 @@ LayoutOrder=1,
 Parent=p,
 })
 
-local r=ac.Text{
+local s=ac.Text{
 Name="Status",
 Text=b.Status or"RELEASED BETA",
 TextColor3=b.StatusColor or Color3.fromRGB(34,197,94),
 FontFace=ag.Bold,
 TextSize=12,
 Size=UDim2.new(0.6,0,1,0),
-Parent=q,
+Parent=r,
 }
 
-local s=ac.Text{
+local t=ac.Text{
 Name="Tag",
 Text=b.AnnounceTag or"ประกาศ",
 TextColor3=af.Foreground,
@@ -10001,10 +10004,10 @@ TextXAlignment=Enum.TextXAlignment.Right,
 AnchorPoint=Vector2.new(1,0),
 Position=UDim2.fromScale(1,0),
 Size=UDim2.new(0.4,0,1,0),
-Parent=q,
+Parent=r,
 }
 
-local t=ac.Text{
+local u=ac.Text{
 Name="Body",
 Text=b.Body or"Bugs Fix :)",
 RichText=true,
@@ -10019,7 +10022,7 @@ LayoutOrder=2,
 Parent=p,
 }
 
-local u=ad("Frame",{
+local v=ad("Frame",{
 Name="UpdateLog",
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,0),
@@ -10030,7 +10033,7 @@ Parent=p,
 ac.List(6),
 })
 
-local v={
+local w={
 NEW=Color3.fromRGB(34,197,94),
 ADD=Color3.fromRGB(34,197,94),
 FIX=Color3.fromRGB(234,179,8),
@@ -10038,39 +10041,39 @@ UPD=Color3.fromRGB(68,119,242),
 REM=Color3.fromRGB(239,68,68),
 }
 
-local function renderUpdates(w)
-for x,y in ipairs(u:GetChildren())do
-if y:IsA"GuiObject"then
-y:Destroy()
+local function renderUpdates(x)
+for y,z in ipairs(v:GetChildren())do
+if z:IsA"GuiObject"then
+z:Destroy()
 end
 end
-if type(w)~="table"or#w==0 then
-u.Visible=false
+if type(x)~="table"or#x==0 then
+v.Visible=false
 return
 end
-u.Visible=true
+v.Visible=true
 
-for x,y in ipairs(w)do
-local z,A,B,C
-if type(y)=="table"then
-z=tostring(y.Tag or y.Type or"UPD")
-A=y.Version and tostring(y.Version)or nil
-B=tostring(y.Text or y.Desc or y[1]or"")
-C=y.Color or v[string.upper(z)]or af.Primary
+for y,z in ipairs(x)do
+local A,B,C,D
+if type(z)=="table"then
+A=tostring(z.Tag or z.Type or"UPD")
+B=z.Version and tostring(z.Version)or nil
+C=tostring(z.Text or z.Desc or z[1]or"")
+D=z.Color or w[string.upper(A)]or af.Primary
 else
-z="UPD"
-B=tostring(y)
-C=af.Primary
+A="UPD"
+C=tostring(z)
+D=af.Primary
 end
 
-local D=ad("Frame",{
-Name="Item_"..x,
+local E=ad("Frame",{
+Name="Item_"..y,
 BackgroundColor3=af.Foreground,
 BackgroundTransparency=0.94,
 Size=UDim2.new(1,0,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
-LayoutOrder=x,
-Parent=u,
+LayoutOrder=y,
+Parent=v,
 },{
 ac.Corner(6),
 ac.Padding(6,8,6,8),
@@ -10079,22 +10082,22 @@ ac.List(8,Enum.FillDirection.Horizontal),
 
 ad("TextLabel",{
 Name="Badge",
-Text=string.upper(z),
+Text=string.upper(A),
 TextColor3=Color3.fromRGB(15,17,21),
-BackgroundColor3=C,
+BackgroundColor3=D,
 FontFace=ag.Bold,
 TextSize=10,
 Size=UDim2.fromOffset(42,18),
 LayoutOrder=1,
-Parent=D,
+Parent=E,
 },{
 ac.Corner(4),
 })
 
-local E=A and(string.format("[%s] %s",A,B))or B
+local F=B and(string.format("[%s] %s",B,C))or C
 ac.Text{
 Name="Desc",
-Text=E,
+Text=F,
 RichText=true,
 TextWrapped=true,
 TextColor3=af.Foreground,
@@ -10103,7 +10106,7 @@ TextSize=12,
 Size=UDim2.new(1,-54,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,
 LayoutOrder=2,
-Parent=D,
+Parent=E,
 }
 end
 end
@@ -10112,11 +10115,11 @@ renderUpdates(b.Updates or b.UpdateLog)
 
 return{
 Instance=d,
-SetSubtitle=function(w,x)g.Text=tostring(x)end,
-SetStatus=function(w,x)r.Text=tostring(x)end,
-SetAnnounceTag=function(w,x)s.Text=tostring(x)end,
-SetBody=function(w,x)t.Text=tostring(x)end,
-SetUpdates=function(w,x)renderUpdates(x)end,
+SetSubtitle=function(x,y)g.Text=tostring(y)end,
+SetStatus=function(x,y)s.Text=tostring(y)end,
+SetAnnounceTag=function(x,y)t.Text=tostring(y)end,
+SetBody=function(x,y)u.Text=tostring(y)end,
+SetUpdates=function(x,y)renderUpdates(y)end,
 }
 end
 
