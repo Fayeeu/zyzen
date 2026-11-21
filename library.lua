@@ -9362,7 +9362,8 @@ end
 return{Text=g,Muted=true,Sort=e}
 end
 
-local e=am:AddTable{
+local e
+local f=am:AddTable{
 Columns={
 {Key="Name",Title="Config",Grow=3},
 {Key="Settings",Title="Settings",Align="Right"},
@@ -9381,9 +9382,9 @@ c:SetLocked(d==nil)
 end
 end
 
-e.SelectionChanged:Connect(function(f,g)
-if g then
-d=g.Name.Text
+f.SelectionChanged:Connect(function(g,h)
+if h then
+d=h.Name.Text
 else
 d=nil
 end
@@ -9404,12 +9405,12 @@ Buttons={
 Title="Load",
 Icon="squareAndArrowUp",
 Callback=function()
-local f=requireSelection()
-if not f then return end
-if al.Load(f)then
-notify("Loaded "..f,"Success")
+local g=requireSelection()
+if not g then return end
+if al.Load(g)then
+notify("Loaded "..g,"Success")
 else
-notify("Could not load "..f,"Error")
+notify("Could not load "..g,"Error")
 end
 end,
 },
@@ -9422,10 +9423,10 @@ Description="It is replaced with your settings as they are now",
 ConfirmText="Overwrite",
 },
 Callback=function()
-local f=requireSelection()
-if f and al.Save(f)then
-refreshConfigList()
-notify("Saved "..f,"Success")
+local g=requireSelection()
+if g and al.Save(g)then
+e()
+notify("Saved "..g,"Success")
 end
 end,
 },
@@ -9433,10 +9434,10 @@ end,
 Title="Export",
 Variant="Secondary",
 Callback=function()
-local f=requireSelection()
-local g=f and al.Code(f)
-if f and g then
-copyToClipboard(g,f.."'s code")
+local g=requireSelection()
+local h=g and al.Code(g)
+if g and h then
+copyToClipboard(h,g.."'s code")
 end
 end,
 },
@@ -9445,11 +9446,11 @@ Title="Auto",
 Icon="bolt",
 Variant="Ghost",
 Callback=function()
-local f=requireSelection()
-if f then
-al.SetAutoload(f)
-refreshConfigList()
-notify(f.." loads on start","Success")
+local g=requireSelection()
+if g then
+al.SetAutoload(g)
+e()
+notify(g.." loads on start","Success")
 end
 end,
 },
@@ -9464,51 +9465,51 @@ Destructive=true,
 Icon="trash-2",
 },
 Callback=function()
-local f=requireSelection()
-if f then
-al.Delete(f)
+local g=requireSelection()
+if g then
+al.Delete(g)
 d=nil
-refreshConfigList()
-notify("Deleted "..f)
+e()
+notify("Deleted "..g)
 end
 end,
 },
 },
 }
 
-local function refreshConfigList()
-local f,g=al.List(),al.GetAutoload()
-local h,i={}
+e=function()
+local g,h=al.List(),al.GetAutoload()
+local i,j={}
 
-for j,k in ipairs(f)do
-local l=""
-if k==g then
-l={Text="Loads on start",Badge="Default",Sort=1}
+for k,l in ipairs(g)do
+local m=""
+if l==h then
+m={Text="Loads on start",Badge="Default",Sort=1}
 end
-local m=al.Read(k)
-local n,o=al.Dates(k)
-table.insert(h,{
-Name={Text=k,Icon="doc"},
-Settings=countSettings(m),
-Created=relativeTime(n),
-Updated=relativeTime(o),
-Start=l,
+local n=al.Read(l)
+local o,p=al.Dates(l)
+table.insert(i,{
+Name={Text=l,Icon="doc"},
+Settings=countSettings(n),
+Created=relativeTime(o),
+Updated=relativeTime(p),
+Start=m,
 })
-if k==d then
-i=j
+if l==d then
+j=k
 end
 end
 
-e:SetRows(h)
-if i then
-e:Select(i)
+f:SetRows(i)
+if j then
+f:Select(j)
 else
 d=nil
 end
 updateLockState()
 if b then
-if g then
-b:SetText(g)
+if h then
+b:SetText(h)
 b:SetVariant"Default"
 else
 b:SetText"None"
@@ -9517,15 +9518,15 @@ end
 end
 end
 
-local f=ag:AddSection{
+local g=ag:AddSection{
 Title="Manage",
 Description="Create a config, bring one in from a code, or share your settings",
 Icon="gearshape",
 Color="Pink",
 }
 
-local g
-g=f:AddInput{
+local h
+h=g:AddInput{
 Title="New config",
 Description="Saves the settings as they are now under a name",
 Placeholder="Config name",
@@ -9534,25 +9535,25 @@ Width=170,
 Button={
 Title="Create",
 Icon="plus",
-Callback=function(h)
-local i=ab.CleanName(h)
-if i==""then
+Callback=function(i)
+local j=ab.CleanName(i)
+if j==""then
 notify("Name it first","Warning")
 return
 end
-if table.find(al.List(),i)
+if table.find(al.List(),j)
 and not aj:Confirm{
-Title=i.." exists",
+Title=j.." exists",
 Description="Overwrite it with your settings as they are now?",
 ConfirmText="Overwrite",
 }
 then
 return
 end
-if al.Save(i)then
-g:Set("",true)
-refreshConfigList()
-notify("Created "..i,"Success")
+if al.Save(j)then
+h:Set("",true)
+e()
+notify("Created "..j,"Success")
 else
 notify("Could not save","Error","This executor cannot write files")
 end
@@ -9560,8 +9561,8 @@ end,
 },
 }
 
-local h
-h=f:AddInput{
+local i
+i=g:AddInput{
 Title="Import",
 Description="Paste a config code to add it as a config",
 Placeholder="Paste a code",
@@ -9570,12 +9571,12 @@ Width=170,
 Button={
 Title="Import",
 Variant="Secondary",
-Callback=function(i)
-local j,k=al.Import(i or"")
-if j and k then
-h:Set("",true)
-refreshConfigList()
-notify("Imported "..k,"Success","Load it from Saved configs")
+Callback=function(j)
+local k,l=al.Import(j or"")
+if k and l then
+i:Set("",true)
+e()
+notify("Imported "..l,"Success","Load it from Saved configs")
 else
 notify("That is not a config code","Error","Copy one with Export first")
 end
@@ -9583,7 +9584,7 @@ end,
 },
 }
 
-f:AddButton{
+g:AddButton{
 Title="Export current",
 Description="Your settings now, as a code to share or keep",
 ButtonText="Copy code",
@@ -9594,7 +9595,7 @@ copyToClipboard(al.Current(),"Code")
 end,
 }
 
-f:AddButton{
+g:AddButton{
 Title="Copy loader",
 Description="Your settings as getgenv().Configs = { ... }, for a loader script",
 ButtonText="Copy loader",
@@ -9605,32 +9606,32 @@ copyToClipboard(al.Loader(),"Loader")
 end,
 }
 
-b=f:AddBadge{
+b=g:AddBadge{
 Title="Loads on start",
 Description="Set it with Auto under the table",
 Badges={{Text="None",Variant="Outline"}},
 }
 
-f:AddButton{
+g:AddButton{
 Title="Stop loading on start",
 ButtonText="Clear",
 Variant="Ghost",
 Callback=function()
 al.SetAutoload(nil)
-refreshConfigList()
+e()
 notify"Nothing loads on start"
 end,
 }
 
-refreshConfigList()
+e()
 
-local i=al.LoadOnStart~=false and al.GetAutoload()
-if i and not ai._autoloaded then
+local j=al.LoadOnStart~=false and al.GetAutoload()
+if j and not ai._autoloaded then
 ai._autoloaded=true
 task.defer(function()
-if al.Load(i)then
+if al.Load(j)then
 aj:Toast{
-Title="Loaded "..i,
+Title="Loaded "..j,
 Description="Your config for start",
 Duration=3,
 }
