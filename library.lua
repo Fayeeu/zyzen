@@ -9524,7 +9524,8 @@ Icon="gearshape",
 Color="Pink",
 }
 
-f:AddInput{
+local g
+g=f:AddInput{
 Title="New config",
 Description="Saves the settings as they are now under a name",
 Placeholder="Config name",
@@ -9533,25 +9534,25 @@ Width=170,
 Button={
 Title="Create",
 Icon="plus",
-Callback=function(g)
-local h=ab.CleanName(g)
-if h==""then
+Callback=function(h)
+local i=ab.CleanName(h)
+if i==""then
 notify("Name it first","Warning")
 return
 end
-if table.find(al.List(),h)
+if table.find(al.List(),i)
 and not aj:Confirm{
-Title=h.." exists",
+Title=i.." exists",
 Description="Overwrite it with your settings as they are now?",
 ConfirmText="Overwrite",
 }
 then
 return
 end
-if al.Save(h)then
-newConfigInput:Set("",true)
+if al.Save(i)then
+g:Set("",true)
 refreshConfigList()
-notify("Created "..h,"Success")
+notify("Created "..i,"Success")
 else
 notify("Could not save","Error","This executor cannot write files")
 end
@@ -9559,7 +9560,8 @@ end,
 },
 }
 
-f:AddInput{
+local h
+h=f:AddInput{
 Title="Import",
 Description="Paste a config code to add it as a config",
 Placeholder="Paste a code",
@@ -9568,12 +9570,12 @@ Width=170,
 Button={
 Title="Import",
 Variant="Secondary",
-Callback=function(g)
-local h,i=al.Import(g or"")
-if h and i then
-importInput:Set("",true)
+Callback=function(i)
+local j,k=al.Import(i or"")
+if j and k then
+h:Set("",true)
 refreshConfigList()
-notify("Imported "..i,"Success","Load it from Saved configs")
+notify("Imported "..k,"Success","Load it from Saved configs")
 else
 notify("That is not a config code","Error","Copy one with Export first")
 end
@@ -9622,13 +9624,13 @@ end,
 
 refreshConfigList()
 
-local g=al.LoadOnStart~=false and al.GetAutoload()
-if g and not ai._autoloaded then
+local i=al.LoadOnStart~=false and al.GetAutoload()
+if i and not ai._autoloaded then
 ai._autoloaded=true
 task.defer(function()
-if al.Load(g)then
+if al.Load(i)then
 aj:Toast{
-Title="Loaded "..g,
+Title="Loaded "..i,
 Description="Your config for start",
 Duration=3,
 }
