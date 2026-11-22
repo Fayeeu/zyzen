@@ -15,7 +15,8 @@ local d={
 [10771935715]="MahanakhonRacing.luau",
 [10768843336]="Starfall.luau",
 [10767682107]="ThaiAnomalies.luau",
-[10773324460]="AmuletStreet.luau"
+[10773324460]="AmuletStreet.luau",
+[10769792129]="SongGuess.luau"
 }
 
 local e=d[game.GameId]
